@@ -11,8 +11,9 @@ app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 app.secret_key = "srfxfhxgxjjxjxgxxggzfhxjgujg"
 
-mongo = MongoClient('localhost', 27017)
-db = mongo['users'] #users is the name of the db
+mongo = MongoClient("mongodb+srv://quickwork:quickwork@users.46fhmfp.mongodb.net/?retryWrites=true&w=majority")
+db = mongo.test
+
 
 #REGISTER
 @app.route('/register', methods=['POST'])
