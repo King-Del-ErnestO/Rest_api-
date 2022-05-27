@@ -1,1 +1,1 @@
-web: gunicorn portapp:app
+web: gunicorn run:app
