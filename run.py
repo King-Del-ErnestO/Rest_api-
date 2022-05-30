@@ -56,6 +56,7 @@ def login():
 
         if user:
             user['_id'] = str(user['_id'])
+            email = user["email"]
             if user:
                 time = datetime.utcnow() + timedelta(hours=24)
                 token = jwt.encode({
@@ -66,11 +67,12 @@ def login():
                         "exp": time
                     }, app.secret_key, algorithm="HS256")
 
+                res = db['users'].update_one({"email": email}, {"$set":{'email':user['email'], 'password':user['password'], 'first_name':user['first_name'], 'last_name':user["last_name"], 'token':token}})
                 message = f"user authenticated"
                 code = 200
                 status = "successful"
                 res_data['token'] = token
-                res_data['user'] = user
+                res_data['user'] = (lambda token, **kw:kw)(**user)
 
             else:
                 message = "wrong password"
@@ -87,7 +89,7 @@ def login():
         status = "fail"
     return jsonify({'status': status, "data": res_data, "message":message}), code
 
-#Login Token Verification
+#Login JWT Token Verification
 def tokenReq(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -115,9 +117,15 @@ def index():
     code = 500
     status = "fail"
     message = ""
+    token = request.headers['Authorization']
+    token = str.replace(str(token), 'Bearer ', '')
+    user = db['users'].find_one({"token": token})
+    userid = str(user['_id'])
+    template = str(f"template {userid}")
+    user_template = db[template]
     try:
         if (request.method == 'POST'):
-            res = db['template'].insert_one(request.get_json())
+            res = user_template.insert_one(request.get_json())
             if res.acknowledged:
                 message = "item saved"
                 status = 'successful'
@@ -128,7 +136,7 @@ def index():
                 res = 'fail'
                 code = 500
         else:
-            for r in db['template'].find().sort("_id", -1):
+            for r in user_template.find().sort("_id", -1):
                 r['_id'] = str(r['_id'])
                 res.append(r)
             if res:
@@ -152,9 +160,15 @@ def delete_one(item_id):
     code = 500
     message = ""
     status = "fail"
+    token = request.headers['Authorization']
+    token = str.replace(str(token), 'Bearer ', '')
+    user = db['users'].find_one({"token": token})
+    userid = str(user['_id'])
+    template = str(f"template {userid}")
+    user_template = db[template]
     try:
         if (request.method == 'DELETE'):
-            res = db['template'].delete_one({"_id": ObjectId(item_id)})
+            res = user_template.delete_one({"_id": ObjectId(item_id)})
             if res:
                 message = "Delete successfully"
                 status = "successful"
@@ -183,9 +197,15 @@ def by_id(item_id):
     code = 500
     message = ""
     status = "fail"
+    token = request.headers['Authorization']
+    token = str.replace(str(token), 'Bearer ', '')
+    user = db['users'].find_one({"token": token})
+    userid = str(user['_id'])
+    template = str(f"template {userid}")
+    user_template = db[template]
     try:
         if (request.method == 'PUT'):
-            res = db['template'].update_one({"_id": ObjectId(item_id)}, {"$set": request.get_json()})
+            res = user_template.update_one({"_id": ObjectId(item_id)}, {"$set": request.get_json()})
             if res:
                 message = "updated successfully"
                 status = "successful"
@@ -195,7 +215,7 @@ def by_id(item_id):
                 status = "fail"
                 code = 404
         else:
-            data = db['template'].find_one({"_id": ObjectId(item_id)})
+            data = user_template.find_one({"_id": ObjectId(item_id)})
             data['_id'] = str(data['_id'])
             if data:
                 message = "item found"
