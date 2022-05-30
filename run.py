@@ -176,7 +176,7 @@ def delete_one(item_id):
 
 
 #GET SINGLE TEMPLATE AND UPDATE SINGLE TEMPLATE
-@app.route('/template/<item_id>', methods=['GET', 'POST'])
+@app.route('/template/<item_id>', methods=['GET', 'PUT'])
 @tokenReq
 def by_id(item_id):
     data = {}
@@ -184,7 +184,7 @@ def by_id(item_id):
     message = ""
     status = "fail"
     try:
-        if (request.method == 'POST'):
+        if (request.method == 'PUT'):
             res = db['template'].update_one({"_id": ObjectId(item_id)}, {"$set": request.get_json()})
             if res:
                 message = "updated successfully"
