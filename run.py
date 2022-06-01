@@ -99,10 +99,10 @@ def tokenReq(f):
             try:
                 jwt.decode(token, app.secret_key, algorithms="HS256")
             except:
-                return jsonify({"status": "fail", "message": "Not same"}), 401
+                return jsonify({"status": "fail", "message": "Invalid User Token, Unauthorized"}), 401
             return f(*args, **kwargs)
         else:
-            return jsonify({"status": "fail", "message": "unauthorized"}), 401
+            return jsonify({"status": "fail", "message": "Unauthorized"}), 401
 
     return decorated
 
@@ -132,7 +132,7 @@ def index():
                 code = 201
                 res = {"_id": f"{res.inserted_id}"}
             else:
-                message = "insert error"
+                message = "Insert error, Invalid User token"
                 res = 'fail'
                 code = 500
         else:
@@ -144,9 +144,10 @@ def index():
                 status = 'successful'
                 code = 200
             else:
-                message = "no template found"
-                status = 'successful'
-                code = 200
+                message = "Invalid User Token, No template found"
+                status = 'fail'
+                code = 404
+
     except Exception as ee:
         res = {"error": str(ee)}
     return jsonify({"status":status,'data': res, "message":message}), code
@@ -169,16 +170,18 @@ def delete_one(item_id):
     try:
         if (request.method == 'DELETE'):
             res = user_template.delete_one({"_id": ObjectId(item_id)})
+            res['_id'] = str(res['_id'])
+            print(res)
             if res:
                 message = "Delete successfully"
                 status = "successful"
                 code = 201
             else:
-                message = "Delete failed"
+                message = "Invalid User Token, Delete failed"
                 status = "fail"
                 code = 404
         else:
-            message = "Delete Method failed"
+            message = "Method failed"
             status = "fail"
             code = 404
            
@@ -206,12 +209,13 @@ def by_id(item_id):
     try:
         if (request.method == 'PUT'):
             res = user_template.update_one({"_id": ObjectId(item_id)}, {"$set": request.get_json()})
+            res['_id'] = str(res['_id'])
             if res:
                 message = "updated successfully"
                 status = "successful"
                 code = 201
             else:
-                message = "update failed"
+                message = "Invalid User Token, update failed"
                 status = "fail"
                 code = 404
         else:
@@ -222,9 +226,10 @@ def by_id(item_id):
                 status = "successful"
                 code = 200
             else:
-                message = "update failed"
+                message = "Invalid User Token, item not found"
                 status = "fail"
                 code = 404
+
     except Exception as ee:
         message = str(ee)
         status = "Error"
