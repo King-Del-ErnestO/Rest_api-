@@ -12,7 +12,7 @@ app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 app.secret_key = "srfxfhxgxjjxjxgxxggzfhxjgujg"
 
-mongo = MongoClient("mongodb+srv://quickwork:quickwork@users.46fhmfp.mongodb.net/?retryWrites=true&w=majority")
+mongo = MongoClient("mongodb+srv://")
 db = mongo.test
 
 
